@@ -11,18 +11,19 @@ parser.add_argument("max", type=int)
 
 args = parser.parse_args()
 
-img = cv2.imread(args.filename, 0)
-edges = cv2.Canny(img, args.min, args.max)
+img = cv2.imread(args.filename)
+gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+blur = cv2.GaussianBlur(gray, (3, 3), 0)
 
-plt.subplot(121)
-plt.imshow(img, cmap='gray')
-plt.title('Original Image')
-plt.xticks([])
-plt.yticks([])
-plt.subplot(122)
-plt.imshow(edges, cmap='gray')
-plt.title('Edge Image')
-plt.xticks([])
-plt.yticks([])
+sigma = 0.33
 
-plt.show()
+v = np.median(blur)
+
+edges = cv2.Canny(blur, args.min, args.max)
+lower = int(max(0, (1.0 - sigma) * v))
+upper = int(min(255, (1.0 + sigma) * v))
+edges_1 = cv2.Canny(blur, lower, upper)
+
+cv2.imshow("Original", img)
+cv2.imshow("Edges", np.hstack([edges, edges_1]))
+cv2.waitKey(0)
